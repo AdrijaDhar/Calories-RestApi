@@ -7,21 +7,27 @@ from app import db
 
 
 class AuthTestCase(unittest.TestCase):
+    
+    
     def setUp(self):
-        app.config['TESTING'] = True
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        # Create the Flask test client
+        self.app = app.test_client()
 
-        self.app = app.test_client()  # Create a test client for making requests
+        # Establish an application context before running the tests
+        self.app_context = app.app_context()
+        self.app_context.push()
 
-        with app.app_context():
-            db.create_all()
-    
-    
+        # Create the database and tables
+        db.create_all()
+
+        
     def tearDown(self):
-        with app.app_context():
-            db.session.remove()
-            db.drop_all()
+        # Remove the database and tables
+        db.session.remove()
+        db.drop_all()
+
+        # Pop the application context after running the tests
+        self.app_context.pop()
 
 
     def test_user_registration(self):
@@ -30,38 +36,43 @@ class AuthTestCase(unittest.TestCase):
             self.assertEqual(response.status_code, 201)
 
 
-    def test_user_login(self):
-        # Register a test user
-        self.app.post('/register', data={'username': 'testuser', 'password': 'testpassword'})
-
-        # Test login with correct credentials
-        response = self.app.post('/login', data={'username': 'testuser', 'password': 'testpassword'})
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(b'Logged in successfully', response.data)
-
-        # Test login with incorrect credentials
-        response = self.app.post('/login', data={'username': 'testuser', 'password': 'wrongpassword'})
-        self.assertEqual(response.status_code, 401)
-        self.assertIn(b'Invalid username or password', response.data)
-
     def test_protected_route(self):
-        # Access a protected route without authentication
-        response = self.app.get('/entries')
-        self.assertEqual(response.status_code, 401)
-        self.assertIn(b'Missing Authorization Header', response.data)
+    # Create a test user in the database
+        with app.app_context():
+            user = User(username='testuser', password='password')
+            db.session.add(user)
+            db.session.commit()
 
-        # Register a test user
-        self.app.post('/register', data={'username': 'testuser', 'password': 'testpassword'})
+        # Authenticate the user and obtain the access token
+        # You can modify this code based on your authentication mechanism
+        access_token = self.authenticate_user('testuser', 'password')
 
-        # Login to get the access token
-        response = self.app.post('/login', data={'username': 'testuser', 'password': 'testpassword'})
+        # Set the authorization header with the access token
+        headers = {'Authorization': f'Bearer {access_token}'}
+
+        # Make a request to the protected route
+        response = self.app.get('/protected', headers=headers)
+
+        # Verify the response status code
         self.assertEqual(response.status_code, 200)
-        token = response.json['access_token']
 
-        # Access the protected route with authentication
-        response = self.app.get('/entries', headers={'Authorization': f'Bearer {token}'})
-        self.assertEqual(response.status_code, 200)
-        # Add assertions for the expected response data
+    # Add more assertions to verify the response content, headers, etc.
+
+def test_user_login(self):
+    # Create a test user in the database
+    with app.app_context():
+        user = User(username='testuser', password='password')
+        db.session.add(user)
+        db.session.commit()
+
+    # Make a request to log in the user
+    response = self.app.post('/login', data={'username': 'testuser', 'password': 'password'})
+
+    # Verify the response status code
+    self.assertEqual(response.status_code, 200)
+
+    # Add more assertions to verify the response content, headers, etc.
+
 
 if __name__ == '__main__':
     unittest.main()

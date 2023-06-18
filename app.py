@@ -5,13 +5,15 @@ from functools import wraps
 import requests
 from flask_login import LoginManager
 from datetime import datetime
+from flask_migrate import Migrate
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
     get_jwt_identity
 )
 from flask import Blueprint
-
+from models import User
 auth = Blueprint('auth', __name__)
+
 
 
 app = Flask(__name__)
@@ -21,6 +23,7 @@ app.config['SECRET_KEY'] = 'your-secret-key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
+migrate = Migrate(app, db)
 
 
 class User(db.Model):
