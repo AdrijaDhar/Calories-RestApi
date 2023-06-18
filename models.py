@@ -10,7 +10,9 @@ class User(db.Model):
     username = db.Column(db.String(64), unique=True, nullable=False)
     password = db.Column(db.String(128), nullable=False)
     expected_calories = db.Column(db.Integer, nullable=False)
-    entries = db.relationship('Entry', backref='user', lazy=True)
+   # entries = db.relationship('Entry', backref='user', lazy=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('role.id'), nullable=False)
+
 
 class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
