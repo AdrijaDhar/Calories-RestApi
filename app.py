@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import requests
+from datetime import datetime
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
     get_jwt_identity
@@ -92,32 +93,33 @@ def login():
 @protected_route
 def create_entry(current_user):
     data = request.get_json()
-    date = data['date']
+    date = datetime.strptime(data['date'], '%Y-%m-%d').date()
     time = data['time']
     text = data['text']
     calories = data.get('calories')
 
     if calories is None:
         # to retrieve calories from a Calories API provider
-        # Update the 'calories' variable with the retrieved value
+        # Updating the 'calories' variable with the retrieved value
          request_data = {
         'meal_text': text
     }
 
-    # Make a POST request to the Calories API provider
+    # Making a POST request to the Calories API provider
     response = requests.post('https://www.nutritionix.com/api/calories', json=request_data)
 
     if response.status_code == 200:
-        # Retrieve the calories from the response
+        # Retrieving the calories from the response
         calories_data = response.json()
         calories = calories_data.get('calories')
 
-        # Update the 'calories' variable with the retrieved value
+        # Updating the 'calories' variable with the retrieved value
         if calories is not None:
             new_entry.calories = calories
         pass
 
     # Determine if the entry is below expected calories
+    
     # Implement the logic to check if the total for that day is less than the expected number of calories per day
     # Update the 'is_below_expected' field accordingly
 
