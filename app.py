@@ -118,9 +118,16 @@ def create_entry(current_user):
             new_entry.calories = calories
         pass
 
-    # Determine if the entry is below expected calories
+    # Determining if the entry is below expected calories
+    total_calories = Entry.query.filter_by(user_id=current_user.id, date=date).with_entities(db.func.sum(Entry.calories)).scalar()
+    if total_calories is not None and current_user.expected_calories is not None:
+        is_below_expected = total_calories < current_user.expected_calories
+    else:
+        is_below_expected = False
+
     
     # Implement the logic to check if the total for that day is less than the expected number of calories per day
+    
     # Update the 'is_below_expected' field accordingly
 
     new_entry = Entry(date=date, time=time, text=text, calories=calories, user_id=current_user.id)
@@ -154,6 +161,13 @@ def update_entry(current_user, entry_id):
     entry.calories = calories
 
     # Determine if the entry is below expected calories
+    total_calories = Entry.query.filter_by(user_id=current_user.id, date=entry.date).with_entities(db.func.sum(Entry.calories)).scalar()
+    if total_calories is not None and current_user.expected_calories is not None:
+        entry.is_below_expected = total_calories < current_user.expected_calories
+    else:
+        entry.is_below_expected = False
+
+    
     # Implement the logic to check if the total for that day is less than the expected number of calories per day
     # Update the 'is_below_expected' field accordingly
 
