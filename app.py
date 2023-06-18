@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
+import requests
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
     get_jwt_identity
@@ -97,8 +98,23 @@ def create_entry(current_user):
     calories = data.get('calories')
 
     if calories is None:
-        # Implement logic to retrieve calories from a Calories API provider
+        # to retrieve calories from a Calories API provider
         # Update the 'calories' variable with the retrieved value
+         request_data = {
+        'meal_text': text
+    }
+
+    # Make a POST request to the Calories API provider
+    response = requests.post('https://www.nutritionix.com/api/calories', json=request_data)
+
+    if response.status_code == 200:
+        # Retrieve the calories from the response
+        calories_data = response.json()
+        calories = calories_data.get('calories')
+
+        # Update the 'calories' variable with the retrieved value
+        if calories is not None:
+            new_entry.calories = calories
         pass
 
     # Determine if the entry is below expected calories
