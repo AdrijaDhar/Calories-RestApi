@@ -4,14 +4,19 @@ from flask import Flask
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'  # Specify the database URI
 db = SQLAlchemy(app)
+from flask_login import UserMixin
 
-class User(db.Model):
+
+class User(UserMixin, db.Model):
+    __tablename__ = 'users'
+
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), unique=True, nullable=False)
-    password = db.Column(db.String(128), nullable=False)
-    expected_calories = db.Column(db.Integer, nullable=False)
-    role_id = db.Column(db.Integer, db.ForeignKey('role.id'), nullable=False)
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(100), nullable=False)
+    role = db.Column(db.String(20), nullable=False)
 
+    def get_id(self):
+        return str(self.id)
 
 class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)

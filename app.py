@@ -3,13 +3,20 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import requests
+from flask_login import LoginManager
 from datetime import datetime
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
     get_jwt_identity
 )
+from flask import Blueprint
+
+auth = Blueprint('auth', __name__)
+
 
 app = Flask(__name__)
+login_manager = LoginManager(app)
+login_manager.login_view = 'auth.login'
 app.config['SECRET_KEY'] = 'your-secret-key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
@@ -180,6 +187,10 @@ def delete_entry(current_user, entry_id):
 
     return jsonify(message='Entry deleted successfully'), 200
 
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
+
+app.register_blueprint(auth)
 if __name__ == '__main__':
     app.run(debug=True)
