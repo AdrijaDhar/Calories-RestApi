@@ -125,11 +125,6 @@ def create_entry(current_user):
     else:
         is_below_expected = False
 
-    
-    # Implement the logic to check if the total for that day is less than the expected number of calories per day
-    
-    # Update the 'is_below_expected' field accordingly
-
     new_entry = Entry(date=date, time=time, text=text, calories=calories, user_id=current_user.id)
     db.session.add(new_entry)
     db.session.commit()
@@ -167,9 +162,6 @@ def update_entry(current_user, entry_id):
     else:
         entry.is_below_expected = False
 
-    
-    # Implement the logic to check if the total for that day is less than the expected number of calories per day
-    # Update the 'is_below_expected' field accordingly
 
     db.session.commit()
 
