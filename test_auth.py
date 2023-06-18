@@ -31,9 +31,12 @@ class AuthTestCase(unittest.TestCase):
 
 
     def test_user_registration(self):
-        with app.app_context():
-            response = self.app.post('/register', data={'username': 'testuser', 'password': 'testpassword'})
-            self.assertEqual(response.status_code, 201)
+        data = {
+        'username': 'testuser',
+        'password': 'testpassword'
+        }
+        response = self.app.post('/register', json=data, headers={'Content-Type': 'application/json'})
+        self.assertEqual(response.status_code, 201)
 
 
     def test_protected_route(self):
